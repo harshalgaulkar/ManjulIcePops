@@ -203,4 +203,10 @@ This database schema and documentation are created for Manjul Ice Pops business 
 
 **Last Updated:** January 28, 2026  
 **Status:** Active Development  
+<<<<<<< HEAD
 **Contact:** [Your Contact Information Here]
+=======
+**Contact:** Harshal Avinash Gaulkar 
+Mobile No :- 9356452473
+=======
+>>>>>>> 594e9146217fdbec6dc3b97699578a333e443418

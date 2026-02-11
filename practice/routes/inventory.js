@@ -31,5 +31,31 @@ router.put('/:id', (req, res) => {
     })
 })
 
+// count of Products in inventory per category and product which product is out of stock
+router.get('/count', (req, res) => {
+    const sql = `SELECT category, COUNT(*) AS total_products,
+                    SUM(CASE WHEN quantity_unit = 0 THEN 1 ELSE 0 END)
+                    AS out_of_stock FROM products GROUP BY category`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// check if product is in stock
+router.post('/check', (req, res) => {
+    const { product_name } = req.body
+    const sql = 'SELECT quantity_unit FROM products WHERE product_name = ?'
+    pool.query(sql, [product_name], (err, data) => {
+        if (err) {
+            res.send(result.createResult(err))
+        } else if (data.length === 0) {
+            res.send(result.createResult(null, { in_stock: false, message: 'Product not found' }))
+        } else {
+            const in_stock = data[0].quantity_unit > 0
+            res.send(result.createResult(null, { in_stock, quantity_unit: data[0].quantity_unit }))
+        }
+    })
+})
+
 
 module.exports = router

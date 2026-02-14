@@ -120,4 +120,26 @@ Inventory :-
 16. https://localhost:4000/inventory/profit-margin (GET)
     - profit margin per product ((selling_price - cost_price) / selling_price * 100)
 
+
+Employees :-
+
+1. https://localhost:4000/employees/ (get)
+get all employees for admin
+2. https://localhost:4000/employees/ (post)
+{
+  "employee_name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone_number": "+91 9876543210",
+  "address": "123 Main Street, City, State, ZIP Code"
+}
+3. https://localhost:4000/employees/:id (put)
+{
+  "employee_name": "John Doe Updated",
+  "email": "john.doe.updated@example.com",
+  "phone_number": "+91 9876543211",
+  "address": "456 Updated Street, City, State, ZIP Code"
+}
+4. https://localhost:4000/employees/:id (delete)
+
+
 ```

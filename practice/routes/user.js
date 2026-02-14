@@ -6,8 +6,9 @@ const pool = require('../utils/db')
 const result = require('../utils/result')
 
 const router = express.Router()
-const SaltRounds = 10
-const JWT_SECRET = 'hhvshvfvuqfasjhhasdbjajasjvuu'
+const SaltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) console.warn('JWT_SECRET is not set in environment; tokens will be signed with an undefined secret')
 
 // authenticate customer
 router.post('/login', (req, res) => {

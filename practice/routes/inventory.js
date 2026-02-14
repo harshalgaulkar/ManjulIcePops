@@ -31,31 +31,109 @@ router.put('/:id', (req, res) => {
     })
 })
 
-// count of Products in inventory per category and product which product is out of stock
-router.get('/count', (req, res) => {
-    const sql = `SELECT category, COUNT(*) AS total_products,
-                    SUM(CASE WHEN quantity_unit = 0 THEN 1 ELSE 0 END)
-                    AS out_of_stock FROM products GROUP BY category`
+
+// delete product
+router.delete('/:id', (req, res) => {
+    const sql = `DELETE FROM products WHERE product_id = ?`
+    pool.query(sql, [req.params.id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// get product details by id
+router.get('/:id', (req, res) => {
+    const sql = `SELECT * FROM products WHERE product_id = ?`
+    pool.query(sql, [req.params.id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list products by category
+router.get('/category/:category', (req, res) => {
+    const sql = `SELECT * FROM products WHERE category = ?`
+    pool.query(sql, [req.params.category], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// search products by name
+router.get('/search/:name', (req, res) => {
+    const sql = `SELECT * FROM products WHERE product_name LIKE ?`
+    pool.query(sql, [`%${req.params.name}%`], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list low stock products (quantity_unit < threshold)
+router.get('/low-stock/:threshold', (req, res) => {
+    const sql = `SELECT * FROM products WHERE quantity_unit < ?`
+    pool.query(sql, [req.params.threshold], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list products sorted by selling price
+router.get('/sorted/price', (req, res) => {
+    const sql = `SELECT * FROM products ORDER BY selling_price ASC`
     pool.query(sql, (err, data) => {
         res.send(result.createResult(err, data))
     })
 })
 
-// check if product is in stock
-router.post('/check', (req, res) => {
-    const { product_name } = req.body
-    const sql = 'SELECT quantity_unit FROM products WHERE product_name = ?'
-    pool.query(sql, [product_name], (err, data) => {
-        if (err) {
-            res.send(result.createResult(err))
-        } else if (data.length === 0) {
-            res.send(result.createResult(null, { in_stock: false, message: 'Product not found' }))
-        } else {
-            const in_stock = data[0].quantity_unit > 0
-            res.send(result.createResult(null, { in_stock, quantity_unit: data[0].quantity_unit }))
-        }
+// list products sorted by name
+router.get('/sorted/name', (req, res) => {
+    const sql = `SELECT * FROM products ORDER BY product_name ASC`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
     })
 })
 
+// list products sorted by category
+router.get('/sorted/category', (req, res) => {
+    const sql = `SELECT * FROM products ORDER BY category ASC`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list products sorted by quantity
+router.get('/sorted/quantity', (req, res) => {
+    const sql = `SELECT * FROM products ORDER BY quantity_unit ASC`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// check my stock value (cost_price * quantity_unit)
+router.get('/stock-value', (req, res) => {
+    const sql = `SELECT SUM(cost_price * quantity_unit) AS stock_value FROM products`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// check my potential revenue (selling_price * quantity_unit)
+router.get('/potential-revenue', (req, res) => {
+    const sql = `SELECT SUM(selling_price * quantity_unit) AS potential_revenue FROM products`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// check my potential profit (potential_revenue - stock_value)
+router.get('/potential-profit', (req, res) => {
+    const sql = `SELECT (SUM(selling_price * quantity_unit) - SUM(cost_price * quantity_unit)) AS potential_profit FROM products`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// check my profit margin ((selling_price - cost_price) / selling_price * 100)
+router.get('/profit-margin', (req, res) => {
+    const sql = `SELECT product_name, ((selling_price - cost_price) / selling_price * 100) AS profit_margin FROM products`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
 
 module.exports = router

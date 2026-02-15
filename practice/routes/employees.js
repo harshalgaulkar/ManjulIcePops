@@ -41,5 +41,15 @@ router.delete('/:employee_id', (req, res) => {
     })
 })
 
+// get employee details by id
+router.get('/:employee_id', (req, res) => {
+    const { employee_id } = req.params
+    const sql = `SELECT * FROM employees WHERE employee_id=?`
+    pool.query(sql, [employee_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+
 
 module.exports = router

@@ -59,6 +59,13 @@ router.get('/search/:name', (req, res) => {
     })
 })
 
+// list active employees
+router.get('/active', (req, res) => {
+    const sql = `SELECT * FROM employees WHERE is_active=true`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
 
 
 module.exports = router

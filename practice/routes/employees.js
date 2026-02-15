@@ -50,6 +50,15 @@ router.get('/:employee_id', (req, res) => {
     })
 })
 
+// search employees by name
+router.get('/search/:name', (req, res) => {
+    const { name } = req.params
+    const sql = `SELECT * FROM employees WHERE employee_name LIKE ?`
+    pool.query(sql, [`%${name}%`], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
 
 
 module.exports = router

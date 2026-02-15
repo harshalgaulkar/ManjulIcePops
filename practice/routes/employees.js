@@ -67,5 +67,31 @@ router.get('/active', (req, res) => {
     })
 })
 
+// list employees by position
+router.get('/position/:position', (req, res) => {
+    const { position } = req.params
+    const sql = `SELECT * FROM employees WHERE position=?`
+    pool.query(sql, [position], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list employees hired after a certain date
+router.get('/hired_after/:date', (req, res) => {
+    const { date } = req.params
+    const sql = `SELECT * FROM employees WHERE hire_date > ?`
+    pool.query(sql, [date], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+// list employees sorted by salary
+router.get('/sorted/salary', (req, res) => {
+    const sql = `SELECT * FROM employees ORDER BY salary DESC`
+    pool.query(sql, (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
 
 module.exports = router

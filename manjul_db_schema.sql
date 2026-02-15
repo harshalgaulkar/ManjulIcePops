@@ -46,12 +46,17 @@ CREATE TABLE employees (
 CREATE TABLE production_batches (
     batch_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
+    batch_number VARCHAR(50) UNIQUE,
     production_date DATE NOT NULL,
+    expiration_date DATE,
     quantity_produced INT NOT NULL,
     cost_per_unit DECIMAL(10, 2),
     batch_notes TEXT,
     produced_by INT,
+    quality_check BOOLEAN DEFAULT FALSE,
+    batch_status ENUM('Active', 'Expired', 'Used', 'Discarded') DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (produced_by) REFERENCES employees(employee_id)
 );
@@ -74,13 +79,15 @@ CREATE TABLE inventory (
 CREATE TABLE customers (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(255),
     phone_number VARCHAR(15),
     address VARCHAR(255),
     city VARCHAR(50),
     state VARCHAR(50),
     zip_code VARCHAR(10),
     is_active BOOLEAN DEFAULT TRUE,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -149,14 +156,18 @@ CREATE TABLE daily_sales_summary (
 -- =====================================================
 CREATE INDEX idx_product_category ON products(category);
 CREATE INDEX idx_employee_position ON employees(position);
+CREATE INDEX idx_batch_number ON production_batches(batch_number);
 CREATE INDEX idx_batch_product ON production_batches(product_id);
 CREATE INDEX idx_batch_date ON production_batches(production_date);
+CREATE INDEX idx_batch_expiration ON production_batches(expiration_date);
+CREATE INDEX idx_batch_status ON production_batches(batch_status);
 CREATE INDEX idx_order_customer ON sales_orders(customer_id);
 CREATE INDEX idx_order_employee ON sales_orders(employee_id);
 CREATE INDEX idx_order_date ON sales_orders(order_date);
 CREATE INDEX idx_order_item_product ON sales_order_items(product_id);
 CREATE INDEX idx_production_summary_date ON daily_production_summary(production_date);
 CREATE INDEX idx_sales_summary_date ON daily_sales_summary(sales_date);
+CREATE INDEX idx_customer_email ON customers(email);
 
 -- =====================================================
 -- SAMPLE DATA - PRODUCTS
@@ -192,17 +203,17 @@ INSERT INTO customers (customer_name, email, phone_number, address, city, state,
 -- =====================================================
 -- SAMPLE DATA - PRODUCTION BATCHES
 -- =====================================================
-INSERT INTO production_batches (product_id, production_date, quantity_produced, cost_per_unit, batch_notes, produced_by) VALUES
-(1, '2025-12-10', 500, 5.00, 'Morning batch - Good quality', 3),
-(2, '2025-12-10', 400, 4.50, 'Morning batch - Good quality', 3),
-(3, '2025-12-10', 300, 5.50, 'Morning batch', 3),
-(4, '2025-12-10', 100, 15.00, 'Mango lassi production', 3),
-(5, '2025-12-10', 80, 12.00, 'Sweet lassi production', 3),
-(6, '2025-12-10', 120, 20.00, 'Orange juice batch', 3),
-(1, '2025-12-11', 600, 5.00, 'Afternoon batch - High demand', 3),
-(2, '2025-12-11', 450, 4.50, 'Afternoon batch', 3),
-(4, '2025-12-11', 90, 15.00, 'Mango lassi - Refill', 3),
-(6, '2025-12-11', 100, 20.00, 'Orange juice - Refill', 3);
+INSERT INTO production_batches (product_id, batch_number, production_date, expiration_date, quantity_produced, cost_per_unit, batch_notes, produced_by, quality_check, batch_status) VALUES
+(1, 'BATCH-001-MIP-10DEC25', '2025-12-10', '2026-02-10', 500, 5.00, 'Morning batch - Good quality', 3, TRUE, 'Active'),
+(2, 'BATCH-002-SIP-10DEC25', '2025-12-10', '2026-02-10', 400, 4.50, 'Morning batch - Good quality', 3, TRUE, 'Active'),
+(3, 'BATCH-003-CIP-10DEC25', '2025-12-10', '2026-02-10', 300, 5.50, 'Morning batch', 3, TRUE, 'Active'),
+(4, 'BATCH-004-ML-10DEC25', '2025-12-10', '2026-01-10', 100, 15.00, 'Mango lassi production', 3, TRUE, 'Active'),
+(5, 'BATCH-005-SL-10DEC25', '2025-12-10', '2026-01-10', 80, 12.00, 'Sweet lassi production', 3, TRUE, 'Active'),
+(6, 'BATCH-006-OJ-10DEC25', '2025-12-10', '2026-01-10', 120, 20.00, 'Orange juice batch', 3, TRUE, 'Active'),
+(1, 'BATCH-007-MIP-11DEC25', '2025-12-11', '2026-02-11', 600, 5.00, 'Afternoon batch - High demand', 3, TRUE, 'Active'),
+(2, 'BATCH-008-SIP-11DEC25', '2025-12-11', '2026-02-11', 450, 4.50, 'Afternoon batch', 3, TRUE, 'Active'),
+(4, 'BATCH-009-ML-11DEC25', '2025-12-11', '2026-01-11', 90, 15.00, 'Mango lassi - Refill', 3, TRUE, 'Active'),
+(6, 'BATCH-010-OJ-11DEC25', '2025-12-11', '2026-01-11', 100, 20.00, 'Orange juice - Refill', 3, TRUE, 'Active');
 
 -- =====================================================
 -- SAMPLE DATA - INVENTORY
